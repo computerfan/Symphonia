@@ -79,6 +79,7 @@ fn read_granule_channel_side_info<B: ReadBitsLtr>(
         let block_type_enc = bs.read_bits_leq32(2)?;
 
         let is_mixed = bs.read_bool()?;
+        channel.mixed_block_flag = is_mixed;
 
         channel.block_type = match block_type_enc {
             // Only transitional Long blocks (Start, End) are allowed with window switching.

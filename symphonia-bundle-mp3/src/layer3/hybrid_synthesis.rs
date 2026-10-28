@@ -237,7 +237,8 @@ pub(super) fn antialias(channel: &mut GranuleChannel, samples: &mut [f32; 576]) 
     // The anti-aliasing filter must be applied up-to the last non-zero sub-band. After
     // anti-aliasing, the first zeroed sub-band may have non-zero values "smeared" into it.
     // Therefore, the rzero must be updated.
-    channel.rzero = 18 * sb_limit.min(sb_rzero + 2).min(32);
+    let end = 18 * sb_limit.min(sb_rzero + 2).min(32);
+    channel.rzero = channel.rzero.max(end);
 
     // Anti-aliasing is performed using 8 butterfly calculations at the boundaries of ADJACENT
     // sub-bands. For each calculation, there are two samples: lower and upper. For each iteration,
@@ -264,7 +265,7 @@ pub(super) fn antialias(channel: &mut GranuleChannel, samples: &mut [f32; 576]) 
     //
     // Note that all butterfly calculations only involve two samples, and all iterations are
     // independant of each other. This lends itself well for SIMD processing.
-    for sb in (18..channel.rzero).step_by(18) {
+    for sb in (18..end).step_by(18) {
         for i in 0..8 {
             let li = sb - 1 - i;
             let ui = sb + i;
@@ -317,6 +318,9 @@ pub(super) fn hybrid_synthesis(
             let sub_band: &mut [f32; 18] = (&mut samples[start..(start + 18)])
                 .try_into()
                 .expect("slice is exactly 18 elements");
+
+            let window =
+                if channel.mixed_block_flag && sb < 2 { &IMDCT_WINDOWS[0] } else { window };
 
             // Perform the 36-point on the entire sub-band.
             imdct36::imdct36(sub_band, window, &mut overlap[sb]);

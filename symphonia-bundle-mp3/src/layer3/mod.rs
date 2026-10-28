@@ -162,6 +162,8 @@ struct GranuleChannel {
     scalefac_compress: u16,
     /// Indicates the block type (type of window) for the channel in the granule.
     block_type: BlockType,
+    /// If set, the two lowest sub-bands use the normal window, whatever the block type.
+    mixed_block_flag: bool,
     /// Gain factors for region[0..3] in big_values. Each gain factor has a maximum value of 7
     /// (3 bits).
     subblock_gain: [u8; 3],
@@ -212,6 +214,7 @@ impl Default for GranuleChannel {
             global_gain: 0,
             scalefac_compress: 0,
             block_type: BlockType::Long,
+            mixed_block_flag: false,
             subblock_gain: [0; 3],
             table_select: [0; 3],
             region1_start: 0,
@@ -233,6 +236,7 @@ impl fmt::Debug for GranuleChannel {
         writeln!(f, "\tglobal_gain={}", self.global_gain)?;
         writeln!(f, "\tscalefac_compress={}", self.scalefac_compress)?;
         writeln!(f, "\tblock_type={:?}", self.block_type)?;
+        writeln!(f, "\tmixed_block_flag={}", self.mixed_block_flag)?;
         writeln!(f, "\tsubblock_gain={:?}", self.subblock_gain)?;
         writeln!(f, "\ttable_select={:?}", self.table_select)?;
         writeln!(f, "\tregion1_start={}", self.region1_start)?;
